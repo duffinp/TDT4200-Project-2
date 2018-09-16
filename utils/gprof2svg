@@ -1,0 +1,75 @@
+#!/bin/bash
+
+help () {
+    echo "GProf2SVG converter"
+    echo ""
+    echo "  -o <file>   output file"
+    echo "  -h          show this help page"
+    echo ""
+    echo "Requirements:"
+    echo "  -graphviz"
+    echo "  -gprof2dot"
+    echo ""
+    echo "e.g. gprof2svg -o app.svg gprof.txt"
+}
+
+SHORT=o:hwsf:
+LONG=help
+
+getopt --test > /dev/null
+[ $? -ne 4 ] && { echo "'getopt --test' failed in this enviroment"; exit 1; }
+PARSED=$(getopt --options $SHORT --longoptions $LONG --name "$0" -- "$@")
+[ $? -ne 0 ] && { help; exit; }
+eval set -- "$PARSED"
+
+OUTPUT=""
+VALID=0
+PASSTHROUGH=""
+
+while :; do
+    case "$1" in
+    -o)
+        OUTPUT=$2
+        VALID=$(( $VALID + 1 ))
+        shift 2
+        ;;
+    -h)
+        help
+        exit 0
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        PASSTHROUGH="$PASSTHROUGH $1"
+        shift
+        ;;
+    esac
+done
+
+[ ${VALID} -ne 1 ] && {
+    echo "Missing output file!" >&2
+    exit 1
+}
+
+TMP_GPROF=$(mktemp)
+TMP_DOT=$(mktemp)
+cat "${1:-/dev/stdin}" > ${TMP_GPROF} 2>/dev/null || {
+    echo "Could not read '$1'" >&2
+    rm ${TMP_DOT} ${TMP_GPROF}
+    exit 1
+}
+
+gprof2dot $PASSTHROUGH ${TMP_GPROF} >${TMP_DOT} || {
+    echo "Could not convert input to dot file!" >&2
+    rm ${TMP_DOT} ${TMP_GPROF}
+    exit 1
+}
+dot -Tsvg ${TMP_DOT} -o ${OUTPUT} || {
+    echo "Could not convert dot file to '${OUTPUT}'!" >&2
+    rm ${TMP_DOT} ${TMP_GPROF}
+    exit 1
+}
+rm ${TMP_DOT} ${TMP_GPROF}
+exit 0
