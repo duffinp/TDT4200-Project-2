@@ -20,7 +20,7 @@ void runVertexShader( Mesh &mesh,
                       float scale,
 					  unsigned int const width,
 					  unsigned int const height,
-				  	  unsigned int const rotationAngle = 0)
+				  	  float const rotationAngle = 0)
 {
 	float const pi = std::acos(-1);
 	// The matrices defined below are the ones used to transform the vertices and normals.
