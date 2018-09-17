@@ -1,3 +1,0 @@
-input/audir8.obj filter=lfs diff=lfs merge=lfs -text
-input/camaro.obj filter=lfs diff=lfs merge=lfs -text
-input/plant.obj filter=lfs diff=lfs merge=lfs -text
