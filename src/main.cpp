@@ -1,4 +1,6 @@
 #include <mpi.h>
+#include <chrono>
+#include <time.h>
 #include <iostream>
 #include <cstring>
 #include "utilities/OBJLoader.hpp"
@@ -6,7 +8,8 @@
 #include "rasteriser.hpp"
 
 int main(int argc, char **argv) {
-
+ 
+	auto start = clock();
 
 	// Initialize MPI framework
 	MPI_Init(NULL, NULL);
@@ -19,7 +22,7 @@ int main(int argc, char **argv) {
     	int world_rank;
     	MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
 
-	printf("Rank %d out of %d processors\n", world_rank, world_size);
+	//printf("Rank %d out of %d processors\n", world_rank, world_size);
 	std::string input("../input/sphere.obj");
 	std::string output("../output/sphere.png");
 	unsigned int width = 1920;
@@ -65,6 +68,11 @@ int main(int argc, char **argv) {
 	}
 
 	MPI_Finalize();
+
+	auto end = clock();
+
+	float timeTaken = float (end - start)/CLOCKS_PER_SEC;
+	std::cout << "It took " << timeTaken << " seconds to run this program." << std::endl;
 
 	return 0;
 }
