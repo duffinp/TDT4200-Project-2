@@ -29,9 +29,18 @@ int main(int argc, char **argv) {
 	unsigned int height = 1080;
 	unsigned int depth = 3;
 
+
 	float rotationAngle = 0;
-	if (world_size > 1) {
-		rotationAngle = 180.0*((float) world_rank/ (float) (world_size - 1));
+	if (world_rank == 0) {
+		// Master rank computes all of the rotation angles and iteratively sends them out to each process.
+		for (int i = 1; i < world_size; i++) {
+			rotationAngle = 180.0*((float) i/ (float) (world_size - 1));
+			MPI_Send(&rotationAngle, 1, MPI_FLOAT, i, 0, MPI_COMM_WORLD);
+		}
+		rotationAngle = 0;
+	} else if (world_rank > 0) {
+		// Each process receives its rotation angle from the master rank.
+		MPI_Recv(&rotationAngle, 1, MPI_FLOAT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 	}
 
 	for (int i = 1; i < argc; i++) {
@@ -72,7 +81,7 @@ int main(int argc, char **argv) {
 	auto end = clock();
 
 	float timeTaken = float (end - start)/CLOCKS_PER_SEC;
-	std::cout << "It took " << timeTaken << " seconds to run this program." << std::endl;
+	std::cout << "To run process " << world_rank << ", it took " << timeTaken << " seconds." << std::endl;
 
 	return 0;
 }
