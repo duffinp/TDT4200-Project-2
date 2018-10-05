@@ -1,4 +1,3 @@
-#include "mpi.h"
 #include "rasteriser.hpp"
 #include "utilities/lodepng.h"
 #include <vector>
@@ -21,7 +20,7 @@ void runVertexShader( Mesh &mesh,
                       float scale,
 					  unsigned int const width,
 					  unsigned int const height,
-				  	  float rotationAngle = 0)
+				  	  float const rotationAngle = 0)
 {
 	float const pi = std::acos(-1);
 	// The matrices defined below are the ones used to transform the vertices and normals.
@@ -153,14 +152,13 @@ void renderMeshFractal(
 				float largestBoundingBoxSide,
 				int depthLimit,
 				float scale = 1.0,
-				float3 distanceOffset = {0, 0, 0},
-				float rotationAngle = 45) {
+				float3 distanceOffset = {0, 0, 0}) {
 
 	// Start by rendering the mesh at this depth
 	for (unsigned int i = 0; i < meshes.size(); i++) {
 		Mesh &mesh = meshes.at(i);
 		Mesh &transformedMesh = transformedMeshes.at(i);
-		runVertexShader(mesh, transformedMesh, distanceOffset, scale, width, height, rotationAngle);
+		runVertexShader(mesh, transformedMesh, distanceOffset, scale, width, height);
 		rasteriseTriangles(transformedMesh, frameBuffer, depthBuffer, width, height);
 	}
 
@@ -186,17 +184,15 @@ void renderMeshFractal(
 					distanceOffset + offset * (largestBoundingBoxSide / 2.0f) * scale
 				);
 
-				renderMeshFractal(meshes, transformedMeshes, width, height, frameBuffer, depthBuffer, largestBoundingBoxSide, depthLimit, smallerScale, displacedOffset, rotationAngle);
+				renderMeshFractal(meshes, transformedMeshes, width, height, frameBuffer, depthBuffer, largestBoundingBoxSide, depthLimit, smallerScale, displacedOffset);
 			}
 		}
 	}
 
 }
 
-
 // This function kicks off the rasterisation process.
-std::vector<unsigned char> rasterise(std::vector<Mesh> &meshes, unsigned int width, unsigned int height, unsigned int depthLimit, float rotationAngle) {
-
+std::vector<unsigned char> rasterise(std::vector<Mesh> &meshes, unsigned int width, unsigned int height, unsigned int depthLimit) {
 	// We first need to allocate some buffers.
 	// The framebuffer contains the image being rendered.
 	std::vector<unsigned char> frameBuffer;
@@ -231,10 +227,8 @@ std::vector<unsigned char> rasterise(std::vector<Mesh> &meshes, unsigned int wid
 	float3 boundingBoxDimensions = boundingBoxMax - boundingBoxMin;
 	float largestBoundingBoxSide = std::max(std::max(boundingBoxDimensions.x, boundingBoxDimensions.y), boundingBoxDimensions.z);
 
-	float scale = 1.0;
-	float3 distanceOffset = {0, 0, 0};
-	
-	renderMeshFractal(meshes, transformedMeshes, width, height, frameBuffer, depthBuffer, largestBoundingBoxSide, depthLimit, scale, distanceOffset, rotationAngle);
+
+	renderMeshFractal(meshes, transformedMeshes, width, height, frameBuffer, depthBuffer, largestBoundingBoxSide, depthLimit);//depthLimit);
 
 
 	std::cout << "finished!" << std::endl;
