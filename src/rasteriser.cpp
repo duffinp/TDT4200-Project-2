@@ -169,6 +169,7 @@ void renderMeshFractal(
 	}
 
 	// Now we recursively draw the meshes in a smaller size
+	
 	for(int offsetX = -1; offsetX <= 1; offsetX++) {
 		for(int offsetY = -1; offsetY <= 1; offsetY++) {
 			for(int offsetZ = -1; offsetZ <= 1; offsetZ++) {
